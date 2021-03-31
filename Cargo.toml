@@ -1,0 +1,11 @@
+[package]
+name = "caser"
+version = "1.0.0"
+authors = ["Kevin M Granger <git@kevinmgranger.me>"]
+edition = "2018"
+
+description = "Change text between PascalCase, camelCase, and snake_case"
+homepage = "https://github.com/KevinMGranger/caser"
+repository = "https://github.com/KevinMGranger/caser"
+categories = ["command-line-utilities", "development-tools", "text-processing"]
+license = "MIT"
