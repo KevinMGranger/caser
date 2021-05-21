@@ -5,7 +5,7 @@ fn case(string: &str) -> Option<Case> {
         "pascal" => Case::PascalCase,
         "camel" => Case::CamelCase,
         "snake" => Case::SnakeCase,
-        _ => return None
+        _ => return None,
     })
 }
 
@@ -26,12 +26,21 @@ Example: `caser snake ConvertToSnakeCase` would print `convert_to_snake_case`";
 fn main() {
     let mut args = std::env::args().into_iter().skip(1);
 
-    let first_arg = args.next().unwrap();
+    let first_arg = args.next();
 
-    if first_arg == "-h" || first_arg == "--help" {
-        println!("{}", HELP);
-        return;
+    match first_arg.as_ref().map(|x| x.as_str()) {
+        None => {
+            println!("{}", HELP);
+            return;
+        }
+        Some("-h") | Some("--help") => {
+            println!("{}", HELP);
+            return;
+        }
+        _ => {}
     }
+
+    let first_arg = first_arg.unwrap();
 
     let case = case(&first_arg).unwrap_or_else(|| {
         println!("{}\nUnknown case '{}'", HELP, first_arg);
