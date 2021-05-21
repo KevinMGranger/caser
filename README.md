@@ -8,13 +8,14 @@ Can be used as a library or a command-line program.
 
 Usage: `caser CASE term [terms]`
 
-Where `CASE` is one of pascal, camel, or snake.
+Where `CASE` is one of pascal, camel, snake, or sentence.
 
 For reference:
 
 ThisIsPascalCase
 thisIsCamelCase
 this_is_snake_case
+This is sentence case. It starts with a capital after each sentence-ending punctuation mark.
 
 Terms are converted and printed one per line.
 

@@ -7,13 +7,22 @@ pub enum Case {
     PascalCase,
     // camelCase
     CamelCase,
+    // Sentence case. First letter of first word, separated by `.`, '?' or `!`
+    Sentence,
+}
+
+#[derive(Clone, Copy)]
+enum SentenceState {
+    StartOfSentence,
+    StartOfWord,
+    Other,
 }
 
 impl Case {
     pub fn transform(&self, string: &str) -> String {
         let mut chars: Vec<char> = vec![];
         return match self {
-            Self::SnakeCase=> {
+            Self::SnakeCase => {
                 for ch in string.chars() {
                     if ch.is_uppercase() {
                         chars.push('_');
@@ -33,16 +42,16 @@ impl Case {
             Self::PascalCase => {
                 let mut uppercase_next = false;
                 for (i, ch) in string.chars().enumerate() {
-                        if i == 0 {
-                            chars.extend(ch.to_uppercase())
-                        } else if ch == '_' {
-                            uppercase_next = true;
-                        } else if uppercase_next {
-                            chars.extend(ch.to_uppercase());
-                            uppercase_next = false;
-                        } else {
-                            chars.push(ch);
-                        }
+                    if i == 0 {
+                        chars.extend(ch.to_uppercase())
+                    } else if ch == '_' {
+                        uppercase_next = true;
+                    } else if uppercase_next {
+                        chars.extend(ch.to_uppercase());
+                        uppercase_next = false;
+                    } else {
+                        chars.push(ch);
+                    }
                 }
 
                 String::from_iter(chars)
@@ -50,21 +59,58 @@ impl Case {
             Self::CamelCase => {
                 let mut uppercase_next = false;
                 for (i, ch) in string.chars().enumerate() {
-                        if i == 0 {
-                            chars.extend(ch.to_lowercase())
-                        } else if ch == '_' {
-                            uppercase_next = true;
-                        } else if uppercase_next {
-                            chars.extend(ch.to_uppercase());
-                            uppercase_next = false;
-                        } else {
-                            chars.push(ch);
-                        }
+                    if i == 0 {
+                        chars.extend(ch.to_lowercase())
+                    } else if ch == '_' {
+                        uppercase_next = true;
+                    } else if uppercase_next {
+                        chars.extend(ch.to_uppercase());
+                        uppercase_next = false;
+                    } else {
+                        chars.push(ch);
+                    }
                 }
 
                 String::from_iter(chars)
             }
-        }
+            Self::Sentence => {
+                let mut state = SentenceState::StartOfSentence;
+                for ch in string.chars() {
+                    match (state, ch.is_whitespace()) {
+                        (SentenceState::Other, true) => {
+                            state = SentenceState::StartOfWord;
+                            chars.push(ch);
+                        }
+                        (SentenceState::Other, false) => {
+                            chars.push(ch);
+                            if let '.' | '!' | '?' = ch {
+                                state = SentenceState::StartOfSentence;
+                            }
+                        }
+                        (SentenceState::StartOfSentence, true) => chars.push(ch),
+                        (SentenceState::StartOfSentence, false) => {
+                            chars.extend(ch.to_uppercase());
+                            state = if let '.' | '!' | '?' = ch {
+                                SentenceState::StartOfSentence
+                            } else {
+                                SentenceState::Other
+                            };
+                        }
+                        (SentenceState::StartOfWord, true) => chars.push(ch),
+                        (SentenceState::StartOfWord, false) => {
+                            chars.extend(ch.to_lowercase());
+                            state = if let '.' | '!' | '?' = ch {
+                                SentenceState::StartOfSentence
+                            } else {
+                                SentenceState::Other
+                            };
+                        }
+                    }
+                }
+
+                String::from_iter(chars)
+            }
+        };
     }
 }
 
@@ -113,5 +159,11 @@ mod tests {
         let expected = "CamelToPascal";
         assert_eq!(expected, PascalCase.transform(input))
     }
-}
 
+    #[test]
+    fn sentence_fix() {
+        let input = "What's The Deal With Airline Food? it's so plane.";
+        let expected = "What's the deal with airline food? It's so plane.";
+        assert_eq!(expected, Sentence.transform(input))
+    }
+}
